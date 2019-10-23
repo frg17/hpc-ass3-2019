@@ -1,4 +1,4 @@
-/*.sh
-/slurm*
-/cart2d
+**/*.sh
+**/slurm*
+**/cart2d
 
