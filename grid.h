@@ -31,7 +31,7 @@ int grid6x6[6][6] =
 #define TILE_LAND 1
 typedef struct Tile {
 	int type;
-	int UP, DOWN, LEFT, RIGHT;
+	int up, down, left, right;
 } Tile;
 
 void *Tile_create(int type) {
@@ -39,4 +39,10 @@ void *Tile_create(int type) {
 	tile->type = type;
 	return tile;
 }
-	
+
+void Tile_set_neighbours(Tile *tile, int up, int down, int left, int right) {
+	tile->up = up;
+	tile->down = down;
+	tile->left = left;
+	tile->right = right;
+}

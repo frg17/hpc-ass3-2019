@@ -77,8 +77,11 @@ int main (int argc, char** argv) {
 	// wait for non-blocking communication to be completed for output  
 	MPI_Waitall(8, reqs, stats);
 
+
+	Tile_set_neighbours(tile, inbuf[UP], inbuf[DOWN], inbuf[LEFT], inbuf[RIGHT] );
+
 	printf("rank= %d has received (u,d,l,r)= %d %d %d %d \n", rank,
-			inbuf[UP], inbuf[DOWN], inbuf[LEFT], inbuf[RIGHT] );
+			tile->up, tile->down, tile->left, tile->right );
 
 	MPI_Finalize();
 
