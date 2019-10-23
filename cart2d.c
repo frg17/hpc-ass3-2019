@@ -12,7 +12,7 @@ int main (int argc, char** argv) {
 	int inbuf[4]={MPI_PROC_NULL,MPI_PROC_NULL, MPI_PROC_NULL,  
 		MPI_PROC_NULL};
 	int nbrs[4];
-	int dims[2] = {4,4}, periods[2] = {1,1}, reorder=1;
+	int dims4x4[2] = {4,4}, dims5x5[2] = {5,5}, dims6x6[2] = {6,6}, periods[2] = {1,1}, reorder=1;
 	int coords[2]; int x, y;
 	MPI_Comm cartcomm;
 
@@ -25,14 +25,33 @@ int main (int argc, char** argv) {
 	MPI_Init(&argc, &argv);
 
 	MPI_Comm_size(MPI_COMM_WORLD, &numtasks);
-	MPI_Cart_create(MPI_COMM_WORLD, 2, dims, periods,reorder, &cartcomm);
 
-	MPI_Comm_rank(cartcomm, &rank);
+	//MPI_Cart_create(MPI_COMM_WORLD, 2, dims, periods,reorder, &cartcomm);
 
-	MPI_Cart_coords(cartcomm, rank, 2, coords);
-	x = coords[0]; y = coords[1];
-	tile = Tile_create(grid4x4[x][y]);
-	
+	if(numtasks == 25)
+	{
+		MPI_Cart_create(MPI_COMM_WORLD, 2, dims5x5, periods,reorder, &cartcomm);
+		MPI_Comm_rank(cartcomm, &rank);
+		MPI_Cart_coords(cartcomm, rank, 2, coords);
+		x = coords[0]; y = coords[1];
+		tile = Tile_create(grid5x5[x][y]);
+	}
+	else if(numtasks == 36)
+	{
+		MPI_Cart_create(MPI_COMM_WORLD, 2, dims6x6, periods,reorder, &cartcomm);
+                MPI_Comm_rank(cartcomm, &rank);
+                MPI_Cart_coords(cartcomm, rank, 2, coords);
+                x = coords[0]; y = coords[1];
+                tile = Tile_create(grid6x6[x][y]);
+	}
+	else
+	{
+		MPI_Cart_create(MPI_COMM_WORLD, 2, dims4x4, periods,reorder, &cartcomm);
+                MPI_Comm_rank(cartcomm, &rank);
+                MPI_Cart_coords(cartcomm, rank, 2, coords);
+                x = coords[0]; y = coords[1];
+                tile = Tile_create(grid4x4[x][y]);
+	}
 
 	MPI_Cart_shift(cartcomm, 0, 1, &nbrs[UP], &nbrs[DOWN] );
 	MPI_Cart_shift(cartcomm, 1, 1, &nbrs[LEFT], &nbrs[RIGHT] );
