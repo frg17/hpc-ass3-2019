@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <mpi.h>
+#include "./grid.h"
 #define SIZE 16
 #define UP 0
 #define DOWN 1
@@ -8,58 +9,57 @@
 
 int main (int argc, char** argv) {
 	int numtasks, rank, source, dest, outbuf, i, tag=1;
-	int inbuf[16]={MPI_PROC_NULL};
-	int world_rank; int color;
+	int inbuf[4]={MPI_PROC_NULL,MPI_PROC_NULL, MPI_PROC_NULL,  
+		MPI_PROC_NULL};
 	int nbrs[4];
 	int dims[2] = {4,4}, periods[2] = {1,1}, reorder=1;
-	int coords[2];
+	int coords[2]; int x, y;
 	MPI_Comm cartcomm;
-	MPI_Comm boat;
-	MPI_Comm tiles;
 
-	MPI_Request reqs[16];
-	MPI_Status stats[16];
+	Tile *tile;
+
+	MPI_Request reqs[8];
+	MPI_Status stats[8];
 
 	// starting with MPI program
 	MPI_Init(&argc, &argv);
-	
+
 	MPI_Comm_size(MPI_COMM_WORLD, &numtasks);
-	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+	MPI_Cart_create(MPI_COMM_WORLD, 2, dims, periods,reorder, &cartcomm);
 
-	
-	if (world_rank != 0) {
-		MPI_Comm_split(MPI_COMM_WORLD, 0, world_rank, &tiles);
-		MPI_Cart_create(tiles, 2, dims, periods, reorder, &cartcomm);
-		MPI_Comm_rank(cartcomm, &rank);
-		MPI_Cart_coords(cartcomm, rank, 2, coords);
-	
-	}
-	else {
-		MPI_Comm_split(MPI_COMM_WORLD, MPI_UNDEFINED, 0, &tiles);
-	}
+	MPI_Comm_rank(cartcomm, &rank);
 
+	MPI_Cart_coords(cartcomm, rank, 2, coords);
+	x = coords[0]; y = coords[1];
+	tile = Tile_create(grid4x4[x][y]);
 	
+
+	MPI_Cart_shift(cartcomm, 0, 1, &nbrs[UP], &nbrs[DOWN] );
+	MPI_Cart_shift(cartcomm, 1, 1, &nbrs[LEFT], &nbrs[RIGHT] );
+
+
+	printf("rank= %d coords= %d %d having neighbours(u,d,l,r)=%d %d %d %d \n", rank, 
+			coords[0], coords[1], nbrs[UP], nbrs[DOWN], nbrs[LEFT], nbrs[RIGHT]);
 
 	// do some work with MPI communication operations...
 	// e.g. exchanging simple data with all neighbours
 
-	outbuf = rank;
-	if (world_rank != 0) {
-		MPI_Isend(&outbuf, 1, MPI_INT, 0, tag, MPI_COMM_WORLD, &reqs[i]);
+	outbuf = tile->type;
+
+	for (i=0; i<4;i++) {
+		dest=nbrs[i];
+		source=nbrs[i];
+
+		// perform non-blocking communication
+		MPI_Isend(&outbuf, 1, MPI_INT, dest, tag, MPI_COMM_WORLD, &reqs[i]);
+		MPI_Irecv(&inbuf[i], 1, MPI_INT, source, tag, MPI_COMM_WORLD, &reqs[i+4]); // 4 as a kind of offset
 	}
 
 	// wait for non-blocking communication to be completed for output  
-	if (world_rank == 0) {
-		for (int i = 1; i < 17; i++) {
-			MPI_Irecv(&inbuf[i - 1], 1, MPI_INT, i, tag, MPI_COMM_WORLD, &reqs[i - 1]);
-		}
+	MPI_Waitall(8, reqs, stats);
 
-		MPI_Waitall(16, reqs, stats);
-
-		for (int i = 0; i < 16; i++) {
-			printf("Got meesage from %d\n", inbuf[i]);
-		}
-	}	
+	printf("rank= %d has received (u,d,l,r)= %d %d %d %d \n", rank,
+			inbuf[UP], inbuf[DOWN], inbuf[LEFT], inbuf[RIGHT] );
 
 	MPI_Finalize();
 
