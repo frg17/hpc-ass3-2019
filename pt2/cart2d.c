@@ -7,6 +7,9 @@
 #define LEFT 2
 #define RIGHT 3
 
+
+#define MAX_ITERATIONS 1000
+
 int main (int argc, char** argv) {
 	int numtasks, rank, source, dest, outbuf, i, tag=1;
 	int inbuf[4]={MPI_PROC_NULL,MPI_PROC_NULL, MPI_PROC_NULL,  
@@ -14,6 +17,8 @@ int main (int argc, char** argv) {
 	int nbrs[4];
 	int dims4x4[2] = {4,4}, dims5x5[2] = {5,5}, dims6x6[2] = {6,6}, periods[2] = {1,1}, reorder=1;
 	int coords[2]; int x, y;
+
+	int cycle = 0;
 	MPI_Comm cartcomm;
 
 	Tile *tile = Tile_create();
@@ -30,7 +35,12 @@ int main (int argc, char** argv) {
 		Tile_setup(tile, 6, &cartcomm);
 	
 
-	Tile_debug_print(tile);
+	//Tile_debug_print(tile);
+	while (cycle < MAX_ITERATIONS) {
+			
+		Tile_iterate(tile);
+		cycle++;
+	}
 	//MPI_Cart_create(MPI_COMM_WORLD, 2, dims, periods,reorder, &cartcomm);
 /*
 	if(numtasks == 25)
