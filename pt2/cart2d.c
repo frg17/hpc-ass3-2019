@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <mpi.h>
-#include "./grid.h"
 #include "./tile.h"
 #define SIZE 16
 #define UP 0
@@ -17,7 +16,7 @@ int main (int argc, char** argv) {
 	int coords[2]; int x, y;
 	MPI_Comm cartcomm;
 
-	Tile *tile;
+	Tile *tile = Tile_create();
 
 	MPI_Request reqs[8];
 	MPI_Status stats[8];
@@ -27,8 +26,13 @@ int main (int argc, char** argv) {
 
 	MPI_Comm_size(MPI_COMM_WORLD, &numtasks);
 
-	//MPI_Cart_create(MPI_COMM_WORLD, 2, dims, periods,reorder, &cartcomm);
+	if (numtasks == 36)
+		Tile_setup(tile, 6, &cartcomm);
+	
 
+	Tile_debug_print(tile);
+	//MPI_Cart_create(MPI_COMM_WORLD, 2, dims, periods,reorder, &cartcomm);
+/*
 	if(numtasks == 25)
 	{
 		MPI_Cart_create(MPI_COMM_WORLD, 2, dims5x5, periods,reorder, &cartcomm);
@@ -77,12 +81,10 @@ int main (int argc, char** argv) {
 
 	// wait for non-blocking communication to be completed for output  
 	MPI_Waitall(8, reqs, stats);
+*/
 
+//	Tile_set_neighbours(tile, inbuf[UP], inbuf[DOWN], inbuf[LEFT], inbuf[RIGHT] );
 
-	Tile_set_neighbours(tile, inbuf[UP], inbuf[DOWN], inbuf[LEFT], inbuf[RIGHT] );
-
-	printf("rank= %d has received (u,d,l,r)= %d %d %d %d \n", rank,
-			tile->up, tile->down, tile->left, tile->right );
 
 	MPI_Finalize();
 
