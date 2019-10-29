@@ -24,7 +24,7 @@ void Tile_makeLand(Tile *tile) {
 
 void Tile_setup(Tile *tile, int num_dimensions, MPI_Comm *cartcomm) {
 	//MPI_Cart_create(MPI_COMM_WORLD, 2, dims, periods,reorder, &cartcomm);
-	int periods[2] = {1, 1}, reorder = 1;
+	int periods[2] = {0, 0}, reorder = 1;
 	
 	int coords[2], x, y, dims[2];
 
@@ -53,6 +53,9 @@ void Tile_setup(Tile *tile, int num_dimensions, MPI_Comm *cartcomm) {
                 x = coords[0]; y = coords[1];
 	}
 
+	if (tile->rank == 0) {
+		Tile_makeLand(tile);
+	}
 	
 
 	MPI_Cart_shift(*cartcomm, 0, 1, &tile->up, &tile->down);
@@ -80,5 +83,8 @@ void Tile_iterate(Tile *tile) {
 
 	// wait for non-blocking communication to be completed for output  
 	MPI_Waitall(8, reqs, stats);
-	printf("Rank %d finished iteration.\n", tile->rank);
+	//printf("Rank %d finished iteration.\n", tile->rank);
+	Tile_debugPrint(tile);
 }
+
+
