@@ -8,7 +8,7 @@
 #define RIGHT 3
 
 
-#define MAX_ITERATIONS 1000
+#define MAX_ITERATIONS 0
 
 int main (int argc, char** argv) {
 	int numtasks, rank, source, dest, outbuf, i, tag=1;
@@ -31,8 +31,10 @@ int main (int argc, char** argv) {
 
 	MPI_Comm_size(MPI_COMM_WORLD, &numtasks);
 
-	if (numtasks == 36)
+	if (numtasks == 36) {
 		Tile_setup(tile, 6, &cartcomm);
+		Tile_getNeighbourTypes(tile);
+	}	
 	
 
 	//Tile_debug_print(tile);
