@@ -1,22 +1,19 @@
 #include <stdio.h>
 
-#include "grid.h"
 #include "tile.h"
-#include "fish.h"
+#include "grid.h"
 
 MPI_Datatype FISHTYPE;
 
 void *Tile_create() {
 	Tile *tile = (Tile *) malloc(sizeof(Tile));
 	tile->type = TILE_WATER;
+	for (int i = 0; i < 3; i++) {
+		tile->fish[i] = NULL;
+	}
 	return tile;
 }
 
-
-void *Tile_debugPrint(Tile *tile) {
-	printf("Rank %d, has neighbours (u, d, l ,r) : (%d, %d, %d, %d)\n",  tile->rank,
-		tile->up, tile->down, tile->left, tile->right);
-}
 
 
 /*
@@ -63,10 +60,13 @@ void Tile_setup(Tile *tile, int num_dimensions, MPI_Comm *cartcomm) {
 	if (tile->rank == 0) {
 		Tile_makeLand(tile);
 	}
-	
 
-	MPI_Cart_shift(*cartcomm, 0, 1, &tile->up, &tile->down);
-	MPI_Cart_shift(*cartcomm, 1, 1, &tile->left, &tile->right);
+	if (tile->rank == 10 && tile->rank == 20 && tile->rank == 30) {
+		tile->fish[0] = Fish_create(x, y);
+	}
+	
+	MPI_Cart_shift(*cartcomm, 0, 1, &tile->nbr[UP], &tile->nbr[DOWN]);
+	MPI_Cart_shift(*cartcomm, 1, 1, &tile->nbr[LEFT], &tile->nbr[RIGHT]);
 
 	Fish_typeInit(&FISHTYPE);
 }
@@ -80,14 +80,13 @@ void Tile_getNeighbourTypes(Tile *tile) {
 	MPI_Status stats[8];
 	int inbuf[4];
 	int outbuf = tile->type;
-	int nbrs[4] = { tile->up, tile->down, tile->left, tile->right };
 
 	int numReqs = 0; //Has to wait for (2 * numNeighbours) requests.
 	int reqIndex = 0; //Hvar í reqs samskipti eru geymd
 
 	for (int i=0; i<4;i++) {
-		int dest=nbrs[i];
-		int source=nbrs[i];
+		int dest=tile->nbr[i];
+		int source=tile->nbr[i];
 
 		if (dest != -2) {
 			numReqs += 2;
@@ -103,13 +102,13 @@ void Tile_getNeighbourTypes(Tile *tile) {
 	
 	// Geymi upplýsingar um týpu hvers nágranna. Það skiptir ekki máli hvaða rusl fer
 	// í týpu þeirra nágranna sem er ekki til.
-	tile->upType = inbuf[0]; tile->downType = inbuf[1];
-	tile->leftType = inbuf[2]; tile->rightType = inbuf[3];
+	tile->nbrType[UP] = inbuf[0]; tile->nbrType[DOWN] = inbuf[1];
+	tile->nbrType[LEFT] = inbuf[2]; tile->nbrType[RIGHT] = inbuf[3];
 
-	printf("Nbr %d has type %d | ", tile->up, tile->upType);
-	printf("Nbr %d has type %d | ", tile->down, tile->downType);
-	printf("Nbr %d has type %d | ", tile->left, tile->leftType);
-	printf("Nbr %d has type %d\n", tile->right, tile->rightType);
+	printf("Nbr %d has type %d | ", tile->nbr[UP], tile->nbrType[UP]);
+	printf("Nbr %d has type %d | ", tile->nbr[DOWN], tile->nbrType[DOWN]);
+	printf("Nbr %d has type %d | ", tile->nbr[LEFT], tile->nbrType[LEFT]);
+	printf("Nbr %d has type %d\n", tile->nbr[RIGHT], tile->nbrType[RIGHT]);
 
 }
 

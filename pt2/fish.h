@@ -1,3 +1,6 @@
+#ifndef __FISH_H__
+#define __FISH_H__
+
 #include <mpi.h>
 
 typedef struct Fish {
@@ -5,11 +8,16 @@ typedef struct Fish {
 	int x, y;
 } Fish;
 
+#include "tile.h"
+
+Fish *Fish_create(int x, int y);
+
 // Tími á að fjölga sér
 void Fish_propagate(Fish *fish);
 
 // Hvert eiga fiskar að fara?
-void Fish_swim(Fish *fish);
+void Fish_swim(Fish *fish, Tile *tile);
 
-void  Fish_typeInit(MPI_Datatype *Fishtype);
-	
+void Fish_typeInit(MPI_Datatype *Fishtype);	
+
+#endif
