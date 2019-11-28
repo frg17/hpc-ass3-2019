@@ -61,7 +61,8 @@ void Tile_setup(Tile *tile, int num_dimensions, MPI_Comm *cartcomm) {
 		Tile_makeLand(tile);
 	}
 
-	if (tile->rank == 10 && tile->rank == 20 && tile->rank == 30) {
+
+	if (tile->rank == 10 || tile->rank == 20 || tile->rank == 30) {
 		tile->fish[0] = Fish_create(x, y);
 	}
 	
@@ -105,11 +106,12 @@ void Tile_getNeighbourTypes(Tile *tile) {
 	tile->nbrType[UP] = inbuf[0]; tile->nbrType[DOWN] = inbuf[1];
 	tile->nbrType[LEFT] = inbuf[2]; tile->nbrType[RIGHT] = inbuf[3];
 
+/*
 	printf("Nbr %d has type %d | ", tile->nbr[UP], tile->nbrType[UP]);
 	printf("Nbr %d has type %d | ", tile->nbr[DOWN], tile->nbrType[DOWN]);
 	printf("Nbr %d has type %d | ", tile->nbr[LEFT], tile->nbrType[LEFT]);
 	printf("Nbr %d has type %d\n", tile->nbr[RIGHT], tile->nbrType[RIGHT]);
-
+*/
 }
 
 
@@ -117,21 +119,64 @@ void Tile_getNeighbourTypes(Tile *tile) {
  * Ítrunar aðgerð fyrir @tile
  *  TODO
  */
-void Tile_iterate(Tile *tile) {
-	MPI_Status stats;
+void Tile_iterate(Tile *tile, MPI_Comm cartcomm) {
+	Tile_handleFish(tile, cartcomm);
 
-	if (tile->rank == 0) {
-		Fish fish = { 40, 50, 999 };
-		
-		MPI_Send(&fish, 1, FISHTYPE, 20, 1, MPI_COMM_WORLD);
+}
+
+
+
+void Tile_handleFish(Tile *tile, MPI_Comm cartcomm) {
+	int reqNum = 0;
+	int incomingCount = 0;
+	int tag = 0;
+	int flag = 0;
+	MPI_Request reqs[3];
+	MPI_Status status;
+	MPI_Status stats[3];
+
+	for (int i = 0; i < 3; i++) {
+		if (tile->fish[i] != NULL) {
+			Fish_propagate(tile->fish[i]);
+
+			int next = Fish_swim(tile->fish[i], tile); //Hvert syndir fiskur
+
+			if (next == 4) {
+				printf("Rank: %d Fish staying\n", tile->rank);
+				 continue; //Ekki færa fisk
+			}
+
+			printf("Sending fish from, to: %d, %d\n", tile->rank, next);
+			MPI_Isend(tile->fish[i], 1, FISHTYPE, next, tag, cartcomm, &reqs[reqNum]);
+			reqNum++;
+			
+			tile->fish[i] = NULL;
+		}
 	}
-	if (tile->rank == 20) {
+
+	MPI_Barrier(cartcomm);
+
+
+	MPI_Iprobe(MPI_ANY_SOURCE, tag, cartcomm, &flag,  &status); 
+	
+	MPI_Barrier(cartcomm);
+	
+	MPI_Get_count(&status, FISHTYPE, &incomingCount);
+
+	if (incomingCount > 0) {
 		Fish fish;
-		MPI_Recv(&fish, 1, FISHTYPE, 0, 1, MPI_COMM_WORLD, &stats);
-		printf("Rank %d received Fish. Count: %d. x %d, y%d\n",
-			tile->rank, fish.count, fish.x, fish.y);
-	}
 		
+		for (int i = 0; i < incomingCount; i++) {
+			MPI_Recv(&fish, 1, FISHTYPE, MPI_ANY_SOURCE, tag, cartcomm, &status);
+			for (int j = 0; j < 3; j++) {
+				if (tile->fish[i] == NULL) {
+					tile->fish[i] = &fish;
+					break;
+				}
+			}
+		}
+	}
+	
 }
 
 

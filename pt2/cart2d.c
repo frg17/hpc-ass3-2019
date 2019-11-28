@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <stdio.h>
 #include <mpi.h>
 #include "./tile.h"
@@ -8,7 +9,7 @@
 #define RIGHT 3
 
 
-#define MAX_ITERATIONS 0
+#define MAX_ITERATIONS 5
 
 int main (int argc, char** argv) {
 	int numtasks, rank, source, dest, outbuf, i, tag=1;
@@ -36,12 +37,15 @@ int main (int argc, char** argv) {
 		Tile_getNeighbourTypes(tile);
 	}	
 	
+	srand(tile->rank);
 
 	//Tile_debug_print(tile);
 	while (cycle < MAX_ITERATIONS) {
-			
-		Tile_iterate(tile);
+		Tile_iterate(tile, cartcomm);
 		cycle++;
+		MPI_Barrier(MPI_COMM_WORLD);
+		if (tile->rank == 0) printf("\n");
+		MPI_Barrier(MPI_COMM_WORLD);
 	}
 	//MPI_Cart_create(MPI_COMM_WORLD, 2, dims, periods,reorder, &cartcomm);
 /*

@@ -16,7 +16,7 @@ Fish *Fish_create(int x, int y);
 void Fish_propagate(Fish *fish);
 
 // Hvert eiga fiskar að fara?
-void Fish_swim(Fish *fish, Tile *tile);
+int Fish_swim(Fish *fish, Tile *tile);
 
 void Fish_typeInit(MPI_Datatype *Fishtype);	
 

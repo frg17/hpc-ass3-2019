@@ -33,8 +33,10 @@ void Tile_setup(Tile *tile, int num_dimensions, MPI_Comm *cartcomm);
 
 void Tile_getNeighbourTypes(Tile *tile);
 
-void Tile_iterate(Tile *tile);
+void Tile_iterate(Tile *tile, MPI_Comm cartcomm);
 
 void Tile_makeLand(Tile *tile);
+
+void Tile_handleFish(Tile *tile, MPI_Comm cartcomm);
 
 #endif

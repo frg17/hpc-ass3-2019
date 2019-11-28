@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <time.h>
 
 #include "fish.h"
@@ -26,18 +27,23 @@ void  Fish_typeInit(MPI_Datatype *Fishtype) {
 
 
 // TODO
-void Fish_swim(Fish *fish, Tile *tile) {
+int Fish_swim(Fish *fish, Tile *tile) {
 	int r = 0;
-	srand(time(NULL));	
 
 	while (1) {
 		r = rand() % 5;
-		
-		if (r == 4)
-			return;
 
-		else if (tile->nbr[r] < 0)
+		if (r == 4) return r;
+
+		if (tile->nbr[r] < 0)
 			continue;
+
+		if (tile->nbrType[r] == TILE_WATER)
+			return tile->nbr[r];
 	}
+}
 
 
+void Fish_propagate(Fish *fish) {
+	fish->count = (int) ((float) fish->count *  1.1f);
+}
