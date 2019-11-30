@@ -44,5 +44,5 @@ int Fish_swim(Fish *fish, Tile *tile) {
 
 void Fish_propagate(Fish *fish) {
 	fish->count = (int) ((float) fish->count *  1.05f);
-	printf("Fish count: %d\n", fish->count);
+	//printf("Fish count: %d\n", fish->count);
 }

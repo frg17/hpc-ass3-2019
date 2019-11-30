@@ -94,6 +94,16 @@ void Tile_getNeighbourTypes(Tile *tile, MPI_Comm cartcomm) {
  */
 void Tile_iterate(Tile *tile, MPI_Comm cartcomm) {
 	Tile_handleFish(tile, cartcomm);
+	
+	int fishCount = 0;
+	for (int i = 0; i < 3; i++) {
+		if (tile->fish[i] != NULL) {
+			fishCount += tile->fish[i]->count;	
+		}
+	}
+	
+	if (fishCount > 0)
+		printf("Tile %d. Fish count: %d\n", tile->rank, fishCount);
 }
 
 
@@ -127,7 +137,7 @@ void Tile_handleFish(Tile *tile, MPI_Comm cartcomm) {
 			int next = Fish_swim(tile->fish[i], tile); //Hvert syndir fiskur
 
 			if (next == 4) {
-				printf("Rank: %d Fish staying\n", tile->rank);
+				//printf("Rank: %d Fish staying\n", tile->rank);
 				 continue; //Ekki færa fisk
 			}
 

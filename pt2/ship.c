@@ -77,7 +77,6 @@ void Ship_iterate(Ship *ship) {
 		
 	}
 
-	printf("Ship %d at %d, %d\n", ship->rank, ship->coords[0], ship->coords[1]);
 	
 	MPI_Barrier(MPI_COMM_WORLD); //Sync world
 	
@@ -99,7 +98,9 @@ void Ship_net(Ship *ship) {
 	MPI_Barrier(MPI_COMM_WORLD); //Sync world
 
 	MPI_Recv(&fishing, 1, MPI_INT, dest, 3, MPI_COMM_WORLD, &status);
-	printf("%d fish netted\n", fishing);
+	//printf("%d fish netted\n", fishing);
+	
+	printf("Ship %d at %d, %d. Netted %d fish\n", ship->rank, ship->coords[0], ship->coords[1], fishing);
 }
 
 

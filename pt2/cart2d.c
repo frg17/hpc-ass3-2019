@@ -47,7 +47,7 @@ int main (int argc, char** argv) {
 
 		cycle++;
 		if (rank == 0) {
-			printf("\n");
+			printf("Cycle %d finished\n\n", cycle);
 		}
 		
 		MPI_Barrier(MPI_COMM_WORLD);
