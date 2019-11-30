@@ -7,8 +7,6 @@
 Fish *Fish_create(int x, int y) {
 	Fish *fish = (Fish *) malloc(sizeof(Fish));
 	fish->count = 1000;
-	fish->x = x;
-	fish->y = y;
 
 	return fish;
 }
@@ -45,5 +43,6 @@ int Fish_swim(Fish *fish, Tile *tile) {
 
 
 void Fish_propagate(Fish *fish) {
-	fish->count = (int) ((float) fish->count *  1.1f);
+	fish->count = (int) ((float) fish->count *  1.05f);
+	printf("Fish count: %d\n", fish->count);
 }

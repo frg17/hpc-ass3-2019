@@ -29,9 +29,9 @@ void *Tile_create();
 
 void *Tile_debugPrint(Tile *tile);
 
-void Tile_setup(Tile *tile, int num_dimensions, MPI_Comm *cartcomm);
+void Tile_setup(Tile *tile, MPI_Comm input_comm, MPI_Comm *cartcomm);
 
-void Tile_getNeighbourTypes(Tile *tile);
+void Tile_getNeighbourTypes(Tile *tile, MPI_Comm cartcomm);
 
 void Tile_iterate(Tile *tile, MPI_Comm cartcomm);
 

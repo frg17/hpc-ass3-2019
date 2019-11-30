@@ -5,7 +5,6 @@
 
 typedef struct Fish {
 	int count;
-	int x, y;
 } Fish;
 
 #include "tile.h"
